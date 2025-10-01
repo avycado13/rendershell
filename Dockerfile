@@ -3,6 +3,7 @@ FROM alpine:latest as builder
 WORKDIR /app
 COPY . ./
 
+FROM --platform=$BUILDPLATFORM docker.io/tailscale/tailscale:stable as tailscale
 # Optional: build step could go here
 # RUN make build
 
@@ -20,8 +21,8 @@ RUN apk update && apk add --no-cache \
 
 # Copy Tailscale binaries from the official image for the correct platform
 # THIS IS THE CORRECTED LINE:
-FROM --platform=$BUILDPLATFORM docker.io/tailscale/tailscale:stable as tailscale
-COPY --from=tailscale /usr/local/bin/tailscaled /usr/local/bin/tailscale /usr/local/bin/
+COPY --from=tailscale /usr/local/bin/tailscaled /usr/local/bin/tailscaled
+COPY --from=tailscale /usr/local/bin/tailscale /usr/local/bin/tailscale
 # Create directories for tailscale and ssh
 RUN mkdir -p /var/run/tailscale /var/cache/tailscale /var/lib/tailscale /app
 
