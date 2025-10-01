@@ -1,13 +1,12 @@
-# This first stage seems unused, but left as is from your original file.
+# Stage 0: optional builder for your app
 FROM alpine:latest as builder
 WORKDIR /app
 COPY . ./
 
-FROM --platform=$BUILDPLATFORM docker.io/tailscale/tailscale:stable as tailscale
-# Optional: build step could go here
-# RUN make build
+# Stage 1: Tailscale binaries
+FROM --platform=$BUILDPLATFORM docker.io/tailscale/tailscale:stable as tailscale-binaries
 
-# Final image
+# Stage 2: final image
 FROM alpine:latest
 
 # Install dependencies
@@ -19,11 +18,11 @@ RUN apk update && apk add --no-cache \
     bash \
     curl
 
-# Copy Tailscale binaries from the official image for the correct platform
-# THIS IS THE CORRECTED LINE:
-COPY --from=tailscale /usr/local/bin/tailscaled /usr/local/bin/tailscaled
-COPY --from=tailscale /usr/local/bin/tailscale /usr/local/bin/tailscale
-# Create directories for tailscale and ssh
+# Copy Tailscale binaries from tailscale-binaries stage
+COPY --from=tailscale-binaries /usr/local/bin/tailscaled /usr/local/bin/tailscaled
+COPY --from=tailscale-binaries /usr/local/bin/tailscale /usr/local/bin/tailscale
+
+# Create directories
 RUN mkdir -p /var/run/tailscale /var/cache/tailscale /var/lib/tailscale /app
 
 # Copy start script
@@ -33,10 +32,9 @@ RUN chmod +x /app/start.sh
 # Expose SSH port
 EXPOSE 22
 
-# Environment variables (defaults)
+# Environment variables
 ENV SSH_USERNAME=renderuser
 ENV SSH_PASSWORD=changeme
 ENV SSH_AUTH_KEYS=""
 
-# Set the command to run on container start
 CMD ["/app/start.sh"]
