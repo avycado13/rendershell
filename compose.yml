@@ -1,0 +1,18 @@
+version: "3.9"
+
+services:
+  rendershell:
+    image: ghcr.io/avycado13/rendershell:main
+    container_name: rendershell
+    restart: unless-stopped
+    privileged: true  # Required for Tailscale networking
+    ports:
+      - "2256:22" # Map localhost:2256 to container port 22 (SSH access)
+    environment:
+      - SSH_USERNAME=renderuser
+      - SSH_PASSWORD=changeme
+      - SSH_AUTH_KEYS= # optional: add your public key
+      - TS_AUTHKEY= # optional: add a Tailscale auth key for automatic login
+    cap_add:
+      - NET_ADMIN
+      - SYS_MODULE

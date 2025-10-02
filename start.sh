@@ -9,6 +9,8 @@ fi
 # Set password
 echo "${SSH_USERNAME}:${SSH_PASSWORD}" | chpasswd
 
+ssh-keygen -A
+
 # Enable SSH key-based login
 mkdir -p /home/${SSH_USERNAME}/.ssh
 chmod 700 /home/${SSH_USERNAME}/.ssh
@@ -33,7 +35,7 @@ fi
 sleep 2
 
 # Start Tailscale daemon and bring up the connection
-/app/tailscale up --authkey=${TAILSCALE_AUTHKEY} --hostname=${SSH_USERNAME}-render
+/usr/local/bin/tailscale up --authkey=${TAILSCALE_AUTHKEY} --hostname=${SSH_USERNAME}-render
 
 # Keep container alive
 tail -f /dev/null
