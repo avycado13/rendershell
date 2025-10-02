@@ -9,8 +9,6 @@ fi
 # Set password
 echo "${SSH_USERNAME}:${SSH_PASSWORD}" | chpasswd
 
-ssh-keygen -A
-
 # Enable SSH key-based login
 mkdir -p /home/${SSH_USERNAME}/.ssh
 chmod 700 /home/${SSH_USERNAME}/.ssh
@@ -22,8 +20,9 @@ if [ -n "$SSH_AUTH_KEYS" ]; then
     chown -R ${SSH_USERNAME}:${SSH_USERNAME} /home/${SSH_USERNAME}/.ssh
 fi
 
-# Start SSH daemon
-/usr/sbin/sshd
+# Start SSH daemon (foreground) after ensuring host keys exist
+ssh-keygen -A
+/usr/sbin/sshd -D &
 
 # Start a lightweight HTTP server to keep the container alive
 (while true; do echo -e "HTTP/1.1 200 OK\n\nAlive"; sleep 5; done | nc -l -p 8080 &)
